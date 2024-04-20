@@ -63,7 +63,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
             ValidIssuer = builder.Configuration["Jwt:Issuer"],
-            ValidAudience = builder.Configuration["Jwt:Audince"],
+            ValidAudience = builder.Configuration["Jwt:Audience"],
             IssuerSigningKey = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
         };
     });
@@ -89,8 +89,9 @@ app.UseCors(option => {
     option.AllowAnyMethod();
     });
 
-app.UseAuthorization();
 app.UseAuthentication();
+
+app.UseAuthorization();
 
 app.UseStaticFiles(new StaticFileOptions
 {
