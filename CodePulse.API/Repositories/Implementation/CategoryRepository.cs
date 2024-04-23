@@ -34,9 +34,48 @@ namespace CodePulse.API.Repositories.Implementation
             return existingCategory;
         }
 
-        public async Task<IEnumerable<Category>> GetAllAsync()
+        public async Task<IEnumerable<Category>> GetAllAsync
+            (string? query = null, 
+            string? shortBy = null, 
+            string? shortDirection = null,
+            int? pageNumber=1,
+            int? pageSize=100)
         {
-          return  await dbContext.Categories.ToListAsync();
+            //query
+
+            var categories = dbContext.Categories.AsQueryable();
+
+            //filltering
+            if (string.IsNullOrWhiteSpace(query) == false)
+            {
+                categories = categories.Where(x=> x.Name.Contains(query));
+            }
+
+            //shorting
+            if (string.IsNullOrWhiteSpace(shortBy) == false)
+            {
+                if (string.Equals(shortBy, "Name", StringComparison.OrdinalIgnoreCase))
+                {
+                    var isAsc = string.Equals(shortDirection, "asc", StringComparison.OrdinalIgnoreCase) ? true : false;
+
+                    categories = isAsc ? categories.OrderBy(x=>x.Name) : categories.OrderByDescending(x=>x.Name);
+                }
+
+                if(string.Equals(shortBy, "urlHandle", StringComparison.OrdinalIgnoreCase)) 
+                { 
+                    var isAsc =string.Equals(shortDirection, "asc", StringComparison.OrdinalIgnoreCase)? true:false;
+
+                    categories = isAsc ?categories.OrderBy(x=> x.UrlHandle) :categories.OrderByDescending(x=>x.UrlHandle);
+                }
+
+            }
+
+            //pagination
+            var skipResults =(pageNumber-1) * pageSize;
+            categories = categories.Skip(skipResults ?? 0).Take(pageSize ?? 100);
+            return await categories.ToListAsync();
+
+          //return  await dbContext.Categories.ToListAsync();
         }
 
         public async Task<Category?> GetById(Guid id)
@@ -46,9 +85,9 @@ namespace CodePulse.API.Repositories.Implementation
        
         }
 
-        public Task<Category> GetById(Category categoryGuid)
+        public async Task<int> GetCount()
         {
-            throw new NotImplementedException();
+            return await dbContext.Categories.CountAsync();
         }
 
         public async Task<Category?> UpdateAsync(Category category)

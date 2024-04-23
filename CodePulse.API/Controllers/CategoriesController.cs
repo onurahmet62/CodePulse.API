@@ -21,7 +21,7 @@ namespace CodePulse.API.Controllers
 
         //
         [HttpPost]
-        [Authorize(Roles = "Writer")]
+       [Authorize(Roles = "Writer")]
         public async Task<IActionResult> CreateCategory([FromBody] CreateCategoryRequestDto request)
         {
             // Map Dto to domain model
@@ -49,9 +49,14 @@ namespace CodePulse.API.Controllers
 
         [HttpGet]
         
-        public async Task<IActionResult> GetAllCategories()
+        public async Task<IActionResult> GetAllCategories(
+            [FromQuery] string? query,
+            [FromQuery] string? sortBy,
+            [FromQuery] string? shortDirection,
+            [FromQuery] int? pageNumber,
+            [FromQuery] int? pageSize)
         {
-            var categories = await categoryRepository.GetAllAsync();
+            var categories = await categoryRepository.GetAllAsync(query, sortBy, shortDirection, pageNumber, pageSize);
 
             //map domain mdoel to dto
 
@@ -145,6 +150,16 @@ namespace CodePulse.API.Controllers
             };
 
             return Ok(response);
+        }
+
+
+        [HttpGet]
+        [Route("count")]
+        public async Task<IActionResult> GetCategories()
+        {
+            var count = await categoryRepository.GetCount();
+            return Ok(count);
+
         }
 
     }
