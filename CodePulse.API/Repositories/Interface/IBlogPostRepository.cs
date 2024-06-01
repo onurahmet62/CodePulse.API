@@ -6,7 +6,12 @@ namespace CodePulse.API.Repositories.Interface
     {
         Task<BlogPost> CreateAsync(BlogPost blogPost);
 
-        Task<IEnumerable<BlogPost>> GetAllAsync();
+        Task<IEnumerable<BlogPost>> GetAllAsync(
+            string? query = null,
+            string? shortBy = null,
+            string? shortDirection = null,
+            int? pageNumber = 1,
+            int? pageSize = 100);
 
         Task<BlogPost?> GetByIdAsync(Guid id);
 
@@ -15,6 +20,8 @@ namespace CodePulse.API.Repositories.Interface
         Task<BlogPost?> UpdateAsync(BlogPost blogPost);
 
         Task<BlogPost?> DeleteAsync(Guid id);
-       
+
+        Task<int> GetCount();
+
     }
 }

@@ -39,9 +39,37 @@ namespace CodePulse.API.Repositories.Implementation
             return null;
         }
 
-        public async Task<IEnumerable<BlogPost>> GetAllAsync()
+        public async Task<IEnumerable<BlogPost>> GetAllAsync(string? query = null,
+            string? shortBy = null,
+            string? shortDirection = null,
+            int? pageNumber = 1,
+            int? pageSize = 100)
         {
-           return await dbContext.BlogPosts.Include(x=>x.Categories).ToListAsync();
+            var blogPosts = dbContext.BlogPosts.AsQueryable();
+
+            //fillterbing
+            if (string.IsNullOrWhiteSpace(query) == false)
+            {
+                blogPosts = blogPosts.Where(x => x.Title.Contains(query));
+            }
+
+            //shorting
+            if (string.IsNullOrWhiteSpace(shortBy) == false)
+            {
+                if (string.Equals(shortBy, "title", StringComparison.OrdinalIgnoreCase))
+                {
+                    var isAsc = string.Equals(shortDirection, "asc", StringComparison.OrdinalIgnoreCase) ? true : false;
+
+                    blogPosts = isAsc ? blogPosts.OrderBy(x => x.Title) : blogPosts.OrderByDescending(x => x.Title);
+                }
+
+
+            }
+
+            //pagination
+            var skipResults = (pageNumber - 1) * pageSize;
+            blogPosts = blogPosts.Skip(skipResults ?? 0).Take(pageSize ?? 100);
+            return await dbContext.BlogPosts.Include(x=>x.Categories).ToListAsync();
         }
 
         public  async Task<BlogPost?> GetByIdAsync(Guid id)
@@ -52,6 +80,11 @@ namespace CodePulse.API.Repositories.Implementation
         public async Task<BlogPost?> GetByUrlHandleAsync(string urlHandle)
         {
             return await dbContext.BlogPosts.Include(x => x.Categories).FirstOrDefaultAsync(x => x.UrlHandle == urlHandle);
+        }
+
+        public async Task<int> GetCount()
+        {
+            return await dbContext.BlogPosts.CountAsync();
         }
 
         public async Task<BlogPost?> UpdateAsync(BlogPost blogPost)

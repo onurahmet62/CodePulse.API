@@ -78,11 +78,17 @@ namespace CodePulse.API.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAllBlogPosts()
+        public async Task<IActionResult> GetAllBlogPosts([FromQuery] string? query,
+            [FromQuery] string? sortBy,
+            [FromQuery] string? shortDirection,
+            [FromQuery] int? pageNumber,
+            [FromQuery] int? pageSize)
         {
-           var blogPosts = await blogPostRepository.GetAllAsync();
+           
+           var blogPosts = await blogPostRepository.GetAllAsync(query, sortBy, shortDirection, pageNumber, pageSize);
 
-           var response = new List<BlogPostDto>();
+
+            var response = new List<BlogPostDto>();
             foreach (var blogPost in blogPosts)
             {
                 response.Add(new BlogPostDto
@@ -263,6 +269,16 @@ namespace CodePulse.API.Controllers
             };
 
             return Ok(response);
+        }
+
+
+        [HttpGet]
+        [Route("count")]
+        public async Task<IActionResult> GetBlogPost()
+        {
+            var count = await blogPostRepository.GetCount();
+            return Ok(count);
+
         }
     }
 }
